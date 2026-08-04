@@ -610,7 +610,9 @@ function setupChat(){
   document.getElementById('presets').querySelectorAll('button').forEach(b=>b.onclick=()=>sendMessage(b.textContent));
   const send=()=>{ const i=document.getElementById('chatText'); sendMessage(i.value); i.value=''; };
   document.getElementById('chatSend').onclick=send;
-  document.getElementById('chatText').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); send(); } });
+  document.getElementById('chatText').addEventListener('keydown', e=>{
+    if(e.key==='Enter' && !e.isComposing && e.keyCode!==229){ e.preventDefault(); send(); }
+  });
   document.getElementById('meChip').onclick=openIdModal;
 }
 
