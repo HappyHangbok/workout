@@ -192,6 +192,51 @@ body {
 /* confetti */
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 999; overflow: hidden; }
 .conf { position: absolute; font-size: 1.2rem; will-change: transform, opacity; }
+
+/* identity chip */
+.me-chip {
+  display: inline-flex; align-items: center; gap: 6px; margin: 11px 0 0 8px;
+  padding: 6px 13px; border-radius: 999px; background: #fff; border: 1.5px solid var(--line);
+  font-size: 0.74rem; font-weight: 700; color: var(--ink-soft); cursor: pointer; transition: all 0.15s;
+}
+.me-chip:hover { border-color: var(--blue); color: var(--blue); }
+
+/* chat */
+.chat-card { background: var(--card); border: 1.5px solid var(--line); border-radius: 24px; padding: 14px; box-shadow: 0 4px 16px rgba(43,58,92,0.05); }
+.chat-list { display: flex; flex-direction: column; gap: 10px; max-height: 340px; overflow-y: auto; padding: 4px 4px 8px; }
+.chat-empty { text-align: center; color: var(--muted); font-size: 0.78rem; padding: 28px 0; font-weight: 500; line-height: 1.6; }
+.msg { display: flex; gap: 8px; align-items: flex-end; max-width: 84%; }
+.msg .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.msg .bubble { padding: 8px 13px; border-radius: 16px 16px 16px 5px; background: #f1f4fa; min-width: 0; }
+.msg .who { font-size: 0.66rem; font-weight: 800; margin-bottom: 2px; }
+.msg .text { font-size: 0.85rem; line-height: 1.42; color: var(--ink); word-break: break-word; white-space: pre-wrap; }
+.msg .time { font-size: 0.6rem; color: var(--muted); align-self: flex-end; white-space: nowrap; }
+.msg.mine { align-self: flex-end; flex-direction: row-reverse; }
+.msg.mine .bubble { color: #fff; border-radius: 16px 16px 5px 16px; }
+.msg.mine .who { display: none; }
+.msg.mine .text { color: #fff; }
+.msg .del { font-size: 0.62rem; color: var(--muted); cursor: pointer; align-self: center; opacity: 0; transition: opacity 0.15s; }
+.msg:hover .del { opacity: 0.65; }
+.presets { display: flex; gap: 6px; overflow-x: auto; padding: 10px 2px 6px; scrollbar-width: none; }
+.presets::-webkit-scrollbar { display: none; }
+.presets button { flex-shrink: 0; padding: 7px 13px; border-radius: 999px; border: 1.5px solid var(--line); background: #fafbfe; color: var(--ink-soft); font-size: 0.74rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.presets button:hover { border-color: var(--blue); color: var(--blue); }
+.chat-input { display: flex; gap: 8px; margin-top: 4px; }
+.chat-input input { flex: 1; padding: 12px 15px; border-radius: 15px; border: 1.5px solid var(--line); background: #fafbfe; font-size: 0.86rem; font-family: inherit; color: var(--ink); outline: none; transition: all 0.15s; }
+.chat-input input:focus { border-color: var(--blue); background: #fff; }
+.chat-input button { width: 46px; border: none; border-radius: 15px; background: var(--blue); color: #fff; font-size: 1.05rem; cursor: pointer; transition: background 0.15s; }
+.chat-input button:hover { background: #4a68bd; }
+
+/* modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(43,58,92,0.35); backdrop-filter: blur(4px); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.open { display: flex; }
+.modal { background: #fff; width: 100%; max-width: 360px; border-radius: 26px; padding: 28px 24px; box-shadow: 0 24px 48px rgba(43,58,92,0.22); animation: slideUp 0.24s ease; }
+.modal h3 { font-size: 1.15rem; font-weight: 800; text-align: center; }
+.modal-sub { font-size: 0.76rem; color: var(--muted); text-align: center; margin: 7px 0 18px; font-weight: 600; }
+.id-choices { display: flex; flex-direction: column; gap: 10px; }
+.id-choices button { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 17px; border: 2px solid var(--line); background: #fafbfe; font-size: 0.95rem; font-weight: 800; color: var(--ink); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.id-choices button:hover { border-color: var(--accent); background: var(--accent-bg); }
+.id-choices button .em { font-size: 1.45rem; }
 </style>
 </head>
 <body>
@@ -204,6 +249,7 @@ body {
     <p>자몽이 · 클레어 · 케밥의 주간 운동 인증</p>
     <div class="goal-pill">🎯 목표 · 주 4회</div>
     <div class="sync" id="sync" style="display:none"><i></i><span>연결 중…</span></div>
+    <div class="me-chip" id="meChip">나는 누구? 🙋</div>
   </div>
 
   <div class="epigraph">
@@ -240,6 +286,24 @@ body {
   <div class="section-head" style="margin-top:26px"><h2>이번 달 기록</h2><span class="range" id="monthTotal"></span></div>
   <div class="stats-card" id="statsCard"></div>
 
+  <div class="section-head" style="margin-top:26px"><h2>치어톡 💬</h2><span class="range" id="chatCount"></span></div>
+  <div class="chat-card">
+    <div class="chat-list" id="chatList"></div>
+    <div class="presets" id="presets"></div>
+    <div class="chat-input">
+      <input id="chatText" type="text" placeholder="한마디 남기기…" maxlength="200" autocomplete="off">
+      <button id="chatSend" aria-label="보내기">➤</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="idModal">
+    <div class="modal">
+      <h3>나는 누구? 🙋</h3>
+      <p class="modal-sub">치어톡에서 내 이름·색으로 표시돼요</p>
+      <div class="id-choices" id="idChoices"></div>
+    </div>
+  </div>
+
   <div class="foot">
     날짜를 눌러 운동 인증을 남겨보세요 · 셋 다 채우면 그 날이 예쁜 그라데이션으로 완성돼요 🎨<br>
     매주 일요일 목표 리셋 · 데이터는 이 브라우저에 저장돼요
@@ -249,7 +313,7 @@ body {
 <script>
 const PEOPLE = [
   { key:'자몽이', emoji:'🍊', var:'jam',    color:'#ff7aa0', bg:'#ffeef3', glow:'rgba(255,122,160,0.32)', soft:'#ffb3c8', wash:'#ffe4ec' },
-  { key:'클레어', emoji:'💜', var:'claire', color:'#7c88f5', bg:'#edeffe', glow:'rgba(124,136,245,0.32)', soft:'#b3bbfa', wash:'#e6e9fd' },
+  { key:'클레어', emoji:'🏊‍♀️', var:'claire', color:'#7c88f5', bg:'#edeffe', glow:'rgba(124,136,245,0.32)', soft:'#b3bbfa', wash:'#e6e9fd' },
   { key:'케밥',   emoji:'🥙', var:'kebab',  color:'#f7b23e', bg:'#fff3df', glow:'rgba(247,178,62,0.32)',  soft:'#ffd486', wash:'#fff0d4' },
 ];
 const GOAL = 4;
@@ -421,8 +485,11 @@ function initFirebase(){
     const el=document.getElementById('sync'); if(el) el.style.display='inline-flex';
     setSync(null, '연결 중…');
     db.collection('tracker').doc('main').onSnapshot(snap=>{
-      data = (snap.data() || {}).days || {};
+      const doc = snap.data() || {};
+      data = doc.days || {};
+      chat = doc.chat || [];
       localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      localStorage.setItem('workout-chat', JSON.stringify(chat));
       renderAll();
       setSync('ok', '실시간 공유 중');
     }, err=>{ console.error(err); setSync('err', '연결 오류'); });
@@ -462,7 +529,92 @@ function burst(type){
   }
 }
 
-function renderAll(){ renderPeople(); renderCal(); renderStats(); renderPanel(); }
+/* ── 정체성 & 치어톡 ── */
+const PRESETS = ['운동 좀 더 해라 ㅋㅋ', '오늘 완료 💪', '같이 가자 🔥', '굿굿 👏', '오늘은 쉬는 날 😴'];
+let me = localStorage.getItem('workout-me') || null;
+let chat = loadChat();
+let lastChatLen = -1;
+
+function loadChat(){ try { return JSON.parse(localStorage.getItem('workout-chat')) || []; } catch(e){ return []; } }
+function personByKey(k){ return PEOPLE.find(p=>p.key===k); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function renderMeChip(){
+  const el=document.getElementById('meChip'); if(!el) return;
+  if(me){ const p=personByKey(me); el.textContent = `나 ${p?p.emoji:''} ${me} ▾`; }
+  else el.textContent = '나는 누구? 🙋';
+}
+function openIdModal(){
+  const host=document.getElementById('idChoices');
+  host.innerHTML = PEOPLE.map(p=>`<button data-k="${p.key}" style="--accent:${p.color};--accent-bg:${p.bg}"><span class="em">${p.emoji}</span>${p.key}</button>`).join('');
+  host.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    me=b.dataset.k; localStorage.setItem('workout-me', me);
+    document.getElementById('idModal').classList.remove('open');
+    renderMeChip(); renderChat();
+  });
+  document.getElementById('idModal').classList.add('open');
+}
+
+function renderChat(){
+  const list=document.getElementById('chatList'); if(!list) return;
+  const sorted=[...chat].sort((a,b)=>a.ts-b.ts);
+  document.getElementById('chatCount').textContent = sorted.length ? `${sorted.length}개` : '';
+  if(!sorted.length){
+    list.innerHTML = `<div class="chat-empty">아직 대화가 없어요.<br>첫 한마디를 남겨보세요! 💬</div>`;
+    lastChatLen = 0; return;
+  }
+  list.innerHTML = sorted.map(m=>{
+    const p=personByKey(m.who), mine=(m.who===me);
+    const t=new Date(m.ts), hh=String(t.getHours()).padStart(2,'0'), mm=String(t.getMinutes()).padStart(2,'0');
+    const color=p?p.color:'#8a93a8', bg=p?p.bg:'#eef1f7', em=p?p.emoji:'🙂';
+    return `<div class="msg ${mine?'mine':''}" data-id="${m.id}">
+      <div class="avatar" style="background:${bg}">${em}</div>
+      <div class="bubble" style="${mine?`background:${color}`:''}">
+        <div class="who" style="color:${color}">${escapeHtml(m.who)}</div>
+        <div class="text">${escapeHtml(m.text)}</div>
+      </div>
+      <span class="time">${hh}:${mm}</span>
+      ${mine?'<span class="del">삭제</span>':''}
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.msg.mine .del').forEach(el=>{
+    el.onclick=()=>deleteMessage(el.closest('.msg').dataset.id);
+  });
+  if(sorted.length !== lastChatLen){ list.scrollTop = list.scrollHeight; lastChatLen = sorted.length; }
+}
+
+function sendMessage(text){
+  text=(text||'').trim(); if(!text) return;
+  if(!me){ openIdModal(); return; }
+  const msg={ id:uid(), who:me, text, ts:Date.now() };
+  if(MODE==='firebase' && db){
+    setSync('syncing');
+    db.collection('tracker').doc('main').set({ chat: firebase.firestore.FieldValue.arrayUnion(msg) }, { merge:true })
+      .then(()=>setSync('ok')).catch(e=>{ console.error(e); setSync('err','전송 실패'); });
+  } else {
+    chat.push(msg); localStorage.setItem('workout-chat', JSON.stringify(chat)); renderChat();
+  }
+}
+function deleteMessage(id){
+  const msg=chat.find(m=>m.id===id); if(!msg) return;
+  if(MODE==='firebase' && db){
+    db.collection('tracker').doc('main').update({ chat: firebase.firestore.FieldValue.arrayRemove(msg) }).catch(e=>console.error(e));
+  } else {
+    chat=chat.filter(m=>m.id!==id); localStorage.setItem('workout-chat', JSON.stringify(chat)); renderChat();
+  }
+}
+
+function setupChat(){
+  document.getElementById('presets').innerHTML = PRESETS.map(t=>`<button>${t}</button>`).join('');
+  document.getElementById('presets').querySelectorAll('button').forEach(b=>b.onclick=()=>sendMessage(b.textContent));
+  const send=()=>{ const i=document.getElementById('chatText'); sendMessage(i.value); i.value=''; };
+  document.getElementById('chatSend').onclick=send;
+  document.getElementById('chatText').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); send(); } });
+  document.getElementById('meChip').onclick=openIdModal;
+}
+
+function renderAll(){ renderPeople(); renderCal(); renderStats(); renderPanel(); renderChat(); renderMeChip(); }
 
 document.getElementById('prevM').onclick=()=>{ view.setMonth(view.getMonth()-1); renderCal(); renderStats(); };
 document.getElementById('nextM').onclick=()=>{ view.setMonth(view.getMonth()+1); renderCal(); renderStats(); };
@@ -471,6 +623,7 @@ document.getElementById('todayBtn').onclick=()=>{
   renderAll(); window.scrollTo({top:document.getElementById('dayPanelHost').offsetTop-70, behavior:'smooth'});
 };
 
+setupChat();
 renderAll();
 if(MODE==='firebase') initFirebase();
 </script>
