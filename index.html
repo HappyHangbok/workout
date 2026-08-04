@@ -608,10 +608,16 @@ function deleteMessage(id){
 function setupChat(){
   document.getElementById('presets').innerHTML = PRESETS.map(t=>`<button>${t}</button>`).join('');
   document.getElementById('presets').querySelectorAll('button').forEach(b=>b.onclick=()=>sendMessage(b.textContent));
-  const send=()=>{ const i=document.getElementById('chatText'); sendMessage(i.value); i.value=''; };
+  const input=document.getElementById('chatText');
+  const send=()=>{ sendMessage(input.value); input.value=''; };
   document.getElementById('chatSend').onclick=send;
-  document.getElementById('chatText').addEventListener('keydown', e=>{
-    if(e.key==='Enter' && !e.isComposing && e.keyCode!==229){ e.preventDefault(); send(); }
+  let composing=false;
+  input.addEventListener('compositionstart', ()=>{ composing=true; });
+  input.addEventListener('compositionend', ()=>{ composing=false; });
+  input.addEventListener('keydown', e=>{
+    if(e.key!=='Enter') return;
+    if(composing || e.isComposing || e.keyCode===229) return; // 한글 조합 중이면 전송 안 함
+    e.preventDefault(); send();
   });
   document.getElementById('meChip').onclick=openIdModal;
 }
