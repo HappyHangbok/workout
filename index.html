@@ -135,7 +135,6 @@ body {
 .cal-day.selected { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(43,58,92,0.1); }
 .cal-day.perfect { animation: perfectPulse 2.4s ease-in-out infinite; }
 .cal-day.perfect .dnum { color: #fff; text-shadow: 0 1px 3px rgba(120,80,140,0.55); }
-.cal-day.perfect .paint { background-size: 220% 220% !important; animation: flow 4.5s ease-in-out infinite; }
 @keyframes perfectPulse {
   0%,100% { box-shadow: 0 2px 8px rgba(150,110,190,0.25); }
   50%     { box-shadow: 0 3px 13px rgba(150,110,190,0.42); }
@@ -148,8 +147,8 @@ body {
 .paint {
   position: absolute; inset: 0; z-index: 1; opacity: 0;
   transition: opacity 0.45s ease;
-  -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 64%, transparent 100%);
-          mask-image: radial-gradient(circle at 50% 45%, #000 64%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 62%, transparent 100%);
+          mask-image: radial-gradient(circle at 50% 45%, #000 62%, transparent 100%);
 }
 .cal-day .paint.show { opacity: 1; }
 .spark { position: absolute; top: 3px; right: 4px; font-size: 0.6rem; z-index: 2; animation: twinkle 1.8s ease-in-out infinite; }
@@ -262,6 +261,16 @@ body {
 .id-choices button { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 17px; border: 2px solid var(--line); background: #fafbfe; font-size: 0.95rem; font-weight: 800; color: var(--ink); cursor: pointer; font-family: inherit; transition: all 0.15s; }
 .id-choices button:hover { border-color: var(--accent); background: var(--accent-bg); }
 .id-choices button .em { font-size: 1.45rem; }
+
+/* easter egg (셋 다 완료) */
+.egg-overlay { display: none; position: fixed; inset: 0; z-index: 500; align-items: center; justify-content: center; padding: 24px; background: rgba(43,58,92,0.5); backdrop-filter: blur(5px); cursor: pointer; }
+.egg-overlay.open { display: flex; animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.egg-box { max-width: 440px; width: 100%; background: #fff; border-radius: 28px; padding: 16px 16px 20px; box-shadow: 0 26px 64px rgba(43,58,92,0.35); text-align: center; animation: eggPop 0.55s cubic-bezier(.2,.9,.3,1.25); }
+.egg-box img { width: 100%; border-radius: 18px; display: block; }
+.egg-cap { font-size: 1.05rem; font-weight: 800; color: var(--ink); margin: 16px 6px 5px; }
+.egg-sub { font-size: 0.74rem; color: var(--muted); font-weight: 600; }
+@keyframes eggPop { 0% { transform: scale(0.55) rotate(-4deg); opacity: 0; } 60% { transform: scale(1.05) rotate(1deg); } 100% { transform: scale(1) rotate(0); opacity: 1; } }
 </style>
 </head>
 <body>
@@ -330,6 +339,14 @@ body {
     </div>
   </div>
 
+  <div class="egg-overlay" id="eggOverlay">
+    <div class="egg-box">
+      <img src="seal.jpg" alt="물개가 자몽과 케밥을 안고 있는 그림" decoding="async">
+      <div class="egg-cap">우리 셋이 해냈다! 🦭🍊🥙</div>
+      <div class="egg-sub">클레어가 자몽이랑 케밥을 꼭 안았어요 · 탭하면 닫혀요</div>
+    </div>
+  </div>
+
   <div class="foot">
     날짜를 눌러 운동 인증을 남겨보세요 · 셋 다 채우면 그 날이 예쁜 그라데이션으로 완성돼요 🎨<br>
     매주 월요일 목표 리셋 · 데이터는 이 브라우저에 저장돼요
@@ -389,7 +406,7 @@ function paintStyle(ons){
   if(ons.length===0) return null;
   const sheen='radial-gradient(circle at 32% 26%, rgba(255,255,255,0.55), transparent 58%)';
   if(ons.length===1){
-    return `${sheen}, linear-gradient(150deg, ${ons[0].soft} 0%, ${ons[0].wash} 95%)`;
+    return `${sheen}, linear-gradient(150deg, ${ons[0].soft} 0%, ${ons[0].wash} 70%, #ffffff 100%)`;
   }
   const stops = ons.map((c,i)=>`${c.soft} ${Math.round(i/(ons.length-1)*100)}%`).join(', ');
   return `${sheen}, linear-gradient(150deg, ${stops})`;
@@ -508,7 +525,14 @@ function toggle(k){
   renderAll();
   if(MODE==='firebase') fbWrite(selected, k, turningOn);
   if(turningOn && prevWeek<GOAL && newWeek>=GOAL) burst('goal');
-  if(turningOn && prevOn<3 && newOn===3) burst('perfect');
+  if(turningOn && prevOn<3 && newOn===3){ showEgg(); requestAnimationFrame(()=>burst('perfect')); }
+}
+
+function showEgg(){
+  const o=document.getElementById('eggOverlay'); if(!o) return;
+  o.classList.add('open');
+  clearTimeout(showEgg._t);
+  showEgg._t=setTimeout(()=>o.classList.remove('open'), 6000);
 }
 
 /* ── Firebase 실시간 동기화 ── */
@@ -551,7 +575,7 @@ function fbWrite(date, person, value){
 function burst(type){
   const host=document.getElementById('confetti');
   const emojis = type==='perfect' ? ['🎉','✨','🌈','💖','🧡','💜'] : ['🎉','💪','⭐','🔥','👏'];
-  const n = type==='perfect'?36:22;
+  const n = type==='perfect'?24:20;
   for(let i=0;i<n;i++){
     const el=document.createElement('div'); el.className='conf';
     el.textContent=emojis[Math.floor(Math.random()*emojis.length)];
@@ -671,6 +695,8 @@ document.getElementById('todayBtn').onclick=()=>{
 };
 
 selected = ymd(new Date());
+document.getElementById('eggOverlay').onclick=()=>document.getElementById('eggOverlay').classList.remove('open');
+(function(){ const ei=document.querySelector('#eggOverlay img'); if(ei && ei.decode) ei.decode().catch(()=>{}); })();
 setupChat();
 renderAll();
 if(MODE==='firebase') initFirebase();
