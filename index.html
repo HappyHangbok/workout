@@ -148,8 +148,8 @@ body {
 .paint {
   position: absolute; inset: 0; z-index: 1; opacity: 0;
   transition: opacity 0.45s ease;
-  -webkit-mask-image: radial-gradient(circle at 50% 48%, #000 84%, transparent 100%);
-          mask-image: radial-gradient(circle at 50% 48%, #000 84%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 64%, transparent 100%);
+          mask-image: radial-gradient(circle at 50% 45%, #000 64%, transparent 100%);
 }
 .cal-day .paint.show { opacity: 1; }
 .spark { position: absolute; top: 3px; right: 4px; font-size: 0.6rem; z-index: 2; animation: twinkle 1.8s ease-in-out infinite; }
@@ -387,11 +387,11 @@ function onKeysOf(rec){ return PEOPLE.filter(p=>rec&&rec[p.key]); }
 // watercolor gradient from the people who worked out
 function paintStyle(ons){
   if(ons.length===0) return null;
-  const sheen='radial-gradient(circle at 30% 24%, rgba(255,255,255,0.4), transparent 62%)';
+  const sheen='radial-gradient(circle at 32% 26%, rgba(255,255,255,0.55), transparent 58%)';
   if(ons.length===1){
-    return `${sheen}, linear-gradient(150deg, ${ons[0].color} 0%, ${ons[0].soft} 100%)`;
+    return `${sheen}, linear-gradient(150deg, ${ons[0].soft} 0%, ${ons[0].wash} 95%)`;
   }
-  const stops = ons.map((c,i)=>`${c.color} ${Math.round(i/(ons.length-1)*100)}%`).join(', ');
+  const stops = ons.map((c,i)=>`${c.soft} ${Math.round(i/(ons.length-1)*100)}%`).join(', ');
   return `${sheen}, linear-gradient(150deg, ${stops})`;
 }
 
