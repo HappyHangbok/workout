@@ -137,8 +137,8 @@ body {
 .cal-day.perfect .dnum { color: #fff; text-shadow: 0 1px 3px rgba(120,80,140,0.55); }
 .cal-day.perfect .paint { background-size: 220% 220% !important; animation: flow 4.5s ease-in-out infinite; }
 @keyframes perfectPulse {
-  0%,100% { box-shadow: 0 4px 14px rgba(180,120,200,0.28); transform: translateY(0); }
-  50%     { box-shadow: 0 8px 24px rgba(180,120,200,0.5);  transform: translateY(-1px); }
+  0%,100% { box-shadow: 0 2px 8px rgba(150,110,190,0.25); }
+  50%     { box-shadow: 0 3px 13px rgba(150,110,190,0.42); }
 }
 @keyframes flow {
   0%   { background-position: 0% 50%; }
@@ -148,8 +148,8 @@ body {
 .paint {
   position: absolute; inset: 0; z-index: 1; opacity: 0;
   transition: opacity 0.45s ease;
-  -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 62%, transparent 100%);
-          mask-image: radial-gradient(circle at 50% 45%, #000 62%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at 50% 48%, #000 84%, transparent 100%);
+          mask-image: radial-gradient(circle at 50% 48%, #000 84%, transparent 100%);
 }
 .cal-day .paint.show { opacity: 1; }
 .spark { position: absolute; top: 3px; right: 4px; font-size: 0.6rem; z-index: 2; animation: twinkle 1.8s ease-in-out infinite; }
@@ -387,11 +387,11 @@ function onKeysOf(rec){ return PEOPLE.filter(p=>rec&&rec[p.key]); }
 // watercolor gradient from the people who worked out
 function paintStyle(ons){
   if(ons.length===0) return null;
-  const sheen='radial-gradient(circle at 32% 26%, rgba(255,255,255,0.55), transparent 58%)';
+  const sheen='radial-gradient(circle at 30% 24%, rgba(255,255,255,0.4), transparent 62%)';
   if(ons.length===1){
-    return `${sheen}, linear-gradient(150deg, ${ons[0].soft} 0%, ${ons[0].wash} 70%, #ffffff 100%)`;
+    return `${sheen}, linear-gradient(150deg, ${ons[0].color} 0%, ${ons[0].soft} 100%)`;
   }
-  const stops = ons.map((c,i)=>`${c.soft} ${Math.round(i/(ons.length-1)*100)}%`).join(', ');
+  const stops = ons.map((c,i)=>`${c.color} ${Math.round(i/(ons.length-1)*100)}%`).join(', ');
   return `${sheen}, linear-gradient(150deg, ${stops})`;
 }
 
