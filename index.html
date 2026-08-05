@@ -82,6 +82,21 @@ body {
   font-size: 0.7rem; box-shadow: 0 3px 8px var(--accent-glow);
 }
 .person-card.done .done-badge { display: flex; animation: pop 0.4s ease; }
+
+/* togetherness banner */
+.together {
+  margin-top: 14px; padding: 13px 18px; border-radius: 18px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  background: linear-gradient(120deg, rgba(255,122,160,0.10), rgba(124,136,245,0.10), rgba(247,178,62,0.12));
+  border: 1.5px solid var(--line); font-size: 0.8rem; color: var(--ink-soft); font-weight: 700;
+}
+.together.lit {
+  border-color: transparent; box-shadow: 0 6px 18px rgba(180,140,210,0.2);
+  background: linear-gradient(120deg, rgba(255,122,160,0.2), rgba(124,136,245,0.2), rgba(247,178,62,0.24));
+  background-size: 220% 220%; animation: flow 5.5s ease-in-out infinite;
+}
+.together b { color: var(--ink); font-size: 0.92rem; }
+.together .tg-sub { font-size: 0.72rem; color: var(--muted); font-weight: 700; }
 @keyframes pop { 0% { transform: scale(0); } 65% { transform: scale(1.3); } 100% { transform: scale(1); } }
 
 /* Calendar */
@@ -118,8 +133,18 @@ body {
 .cal-day.today { border-color: var(--blue); }
 .cal-day.today .dnum { color: var(--blue); font-weight: 800; }
 .cal-day.selected { border-color: var(--ink); box-shadow: 0 0 0 3px rgba(43,58,92,0.1); }
-.cal-day.perfect { box-shadow: 0 6px 18px rgba(180,120,200,0.28); }
+.cal-day.perfect { animation: perfectPulse 2.4s ease-in-out infinite; }
 .cal-day.perfect .dnum { color: #fff; text-shadow: 0 1px 3px rgba(120,80,140,0.55); }
+.cal-day.perfect .paint { background-size: 220% 220% !important; animation: flow 4.5s ease-in-out infinite; }
+@keyframes perfectPulse {
+  0%,100% { box-shadow: 0 4px 14px rgba(180,120,200,0.28); transform: translateY(0); }
+  50%     { box-shadow: 0 8px 24px rgba(180,120,200,0.5);  transform: translateY(-1px); }
+}
+@keyframes flow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 .paint {
   position: absolute; inset: 0; z-index: 1; opacity: 0;
   transition: opacity 0.45s ease;
@@ -263,6 +288,7 @@ body {
     <span class="range" id="weekRange"></span>
   </div>
   <div class="people" id="people"></div>
+  <div class="together" id="together"></div>
 
   <div class="cal-card">
     <div class="cal-head">
@@ -390,6 +416,18 @@ function renderPeople(){
       <div class="count"><b>${c}</b> / ${GOAL}회</div>
     </div>`;
   }).join('');
+}
+
+function renderTogether(){
+  const s=weekStart(new Date());
+  let week=0;
+  for(let i=0;i<7;i++){ const d=new Date(s); d.setDate(s.getDate()+i); if(onKeysOf(data[ymd(d)]||{}).length===3) week++; }
+  let total=0;
+  for(const k in data){ if(onKeysOf(data[k]).length===3) total++; }
+  const el=document.getElementById('together'); if(!el) return;
+  el.className = 'together' + (week>0 ? ' lit' : '');
+  const head = week>0 ? `🌈 이번 주 셋 다 함께한 날 <b>${week}일</b>` : `🌈 이번 주 <b>아직</b> · 셋 다 채워봐요!`;
+  el.innerHTML = `<span>${head}</span><span class="tg-sub">함께한 날 누적 ${total}일 🏆</span>`;
 }
 
 function renderCal(){
@@ -623,7 +661,7 @@ function setupChat(){
   document.getElementById('meChip').onclick=openIdModal;
 }
 
-function renderAll(){ renderPeople(); renderCal(); renderStats(); renderPanel(); renderChat(); renderMeChip(); }
+function renderAll(){ renderPeople(); renderTogether(); renderCal(); renderStats(); renderPanel(); renderChat(); renderMeChip(); }
 
 document.getElementById('prevM').onclick=()=>{ view.setMonth(view.getMonth()-1); renderCal(); renderStats(); };
 document.getElementById('nextM').onclick=()=>{ view.setMonth(view.getMonth()+1); renderCal(); renderStats(); };
@@ -632,6 +670,7 @@ document.getElementById('todayBtn').onclick=()=>{
   renderAll(); window.scrollTo({top:document.getElementById('dayPanelHost').offsetTop-70, behavior:'smooth'});
 };
 
+selected = ymd(new Date());
 setupChat();
 renderAll();
 if(MODE==='firebase') initFirebase();
