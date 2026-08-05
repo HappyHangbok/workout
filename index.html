@@ -306,7 +306,7 @@ body {
 
   <div class="foot">
     날짜를 눌러 운동 인증을 남겨보세요 · 셋 다 채우면 그 날이 예쁜 그라데이션으로 완성돼요 🎨<br>
-    매주 일요일 목표 리셋 · 데이터는 이 브라우저에 저장돼요
+    매주 월요일 목표 리셋 · 데이터는 이 브라우저에 저장돼요
   </div>
 </div>
 
@@ -345,7 +345,7 @@ function save() { localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
 function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fromYmd(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
 function sameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
-function weekStart(d){ const s=new Date(d); s.setDate(d.getDate()-d.getDay()); s.setHours(0,0,0,0); return s; }
+function weekStart(d){ const s=new Date(d); const off=(d.getDay()+6)%7; s.setDate(d.getDate()-off); s.setHours(0,0,0,0); return s; }
 function weekCount(key, ref){
   const s=weekStart(ref); let c=0;
   for(let i=0;i<7;i++){ const day=new Date(s); day.setDate(s.getDate()+i); if(data[ymd(day)]&&data[ymd(day)][key]) c++; }
@@ -395,9 +395,10 @@ function renderPeople(){
 function renderCal(){
   const y=view.getFullYear(), m=view.getMonth();
   document.getElementById('calTitle').textContent=`${y}년 ${m+1}월`;
-  const startPad=new Date(y,m,1).getDay(), dim=new Date(y,m+1,0).getDate(), today=new Date();
-  const dows=['일','월','화','수','목','금','토'];
-  let html=dows.map((d,i)=>`<div class="cal-dow ${i===0?'sun':''}">${d}</div>`).join('');
+  const firstDow=new Date(y,m,1).getDay();
+  const startPad=(firstDow+6)%7, dim=new Date(y,m+1,0).getDate(), today=new Date();
+  const dows=['월','화','수','목','금','토','일'];
+  let html=dows.map((d,i)=>`<div class="cal-dow ${i===6?'sun':''}">${d}</div>`).join('');
   for(let i=0;i<startPad;i++) html+=`<div class="cal-day empty"></div>`;
   for(let dn=1;dn<=dim;dn++){
     const date=new Date(y,m,dn), key=ymd(date), rec=data[key]||{};
